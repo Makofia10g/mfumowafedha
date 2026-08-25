@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mfumo wa Mapato na Matumizi</title>
+<style>
+  :root {
+    --kijani: #1f8a4c;
+    --nyekundu: #c0392b;
+    --bluu: #2c5f8a;
+    --mandharinyuma: #f5f6f8;
+    --kadi: #ffffff;
+    --mpaka: #e2e5e9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--mandharinyuma);
+    margin: 0;
+    padding: 24px;
+    color: #1a1a1a;
+  }
+  .kifuko {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+  .maelezo-juu {
+    color: #666;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+  }
+  .kadi {
+    background: var(--kadi);
+    border: 1px solid var(--mpaka);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  .muhtasari-safu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kipimo {
+    background: var(--kadi);
+    border: 1px solid var(--mpaka);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .kipimo .lebo { font-size: 0.75rem; color: #777; margin-bottom: 4px; }
+  .kipimo .thamani { font-size: 1.2rem; font-weight: 600; }
+  .thamani.mapato { color: var(--kijani); }
+  .thamani.matumizi { color: var(--nyekundu); }
+  .thamani.salio { color: var(--bluu); }
+
+  .vitufe-kipindi { display: flex; gap: 8px; margin-bottom: 16px; }
+  .vitufe-kipindi button {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--mpaka);
+    background: var(--kadi);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .vitufe-kipindi button.hai {
+    background: var(--bluu);
+    color: white;
+    border-color: var(--bluu);
+  }
+
+  form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  .sehemu { display: flex; flex-direction: column; gap: 4px; }
+  .sehemu label { font-size: 0.75rem; color: #666; }
+  .sehemu select, .sehemu input {
+    padding: 8px;
+    border: 1px solid var(--mpaka);
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+  .sehemu.maelezo-input { flex: 1; min-width: 140px; }
+  button.tuma {
+    padding: 9px 18px;
+    background: var(--kijani);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  button.tuma:hover { opacity: 0.9; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  th, td {
+    text-align: left;
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--mpaka);
+    font-size: 0.85rem;
+  }
+  th { color: #777; font-weight: 500; }
+  .aina-lebo {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+  }
+  .aina-lebo.mapato { background: #e6f6ec; color: var(--kijani); }
+  .aina-lebo.matumizi { background: #fbe9e7; color: var(--nyekundu); }
+  .futa-kitufe {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .futa-kitufe:hover { color: var(--nyekundu); }
+  .tupu { text-align: center; color: #999; padding: 20px; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<div class="kifuko">
+  <h1>💰 Mfumo wa Mapato na Matumizi</h1>
+  <p class="maelezo-juu">Fuatilia fedha zako kwa siku, wiki, na mwezi.</p>
+
+  <div class="muhtasari-safu" id="eneo-muhtasari"></div>
+
+  <div class="vitufe-kipindi">
+    <button data-kipindi="leo" class="hai">Leo</button>
+    <button data-kipindi="wiki">Wiki 1</button>
+    <button data-kipindi="mwezi">Mwezi 1</button>
+    <button data-kipindi="yote">Yote</button>
+  </div>
+
+  <div class="kadi">
+    <form id="fomu-muamala">
+      <div class="sehemu">
+        <label>Aina</label>
+        <select id="aina" required>
+          <option value="mapato">Mapato</option>
+          <option value="matumizi">Matumizi</option>
+        </select>
+      </div>
+      <div class="sehemu">
+        <label>Kiasi (TSh)</label>
+        <input type="number" id="kiasi" min="1" step="1" required>
+      </div>
+      <div class="sehemu maelezo-input">
+        <label>Maelezo</label>
+        <input type="text" id="maelezo" placeholder="Mfano: Mshahara, Data ya intaneti">
+      </div>
+      <button type="submit" class="tuma">Ongeza</button>
+    </form>
+  </div>
+
+  <div class="kadi">
+    <table>
+      <thead>
+        <tr><th>Tarehe</th><th>Aina</th><th>Maelezo</th><th>Kiasi</th><th></th></tr>
+      </thead>
+      <tbody id="mwili-jedwali"></tbody>
+    </table>
+    <div id="ujumbe-tupu" class="tupu" style="display:none;">Hakuna miamala bado. Ongeza wa kwanza hapo juu.</div>
+  </div>
+</div>
+
+<script>
+let kipindiKilichochaguliwa = "leo";
+
+function fomatiFedha(namba) {
+  return "TSh " + Number(namba).toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
+
+function fomatiTarehe(isoTarehe) {
+  const d = new Date(isoTarehe);
+  return d.toLocaleDateString("sw-TZ", { day: "2-digit", month: "short" }) + " " +
+         d.toLocaleTimeString("sw-TZ", { hour: "2-digit", minute: "2-digit" });
+}
+
+async function pakiaMuhtasari() {
+  const res = await fetch(`/muhtasari?kipindi=${kipindiKilichochaguliwa}`);
+  const data = await res.json();
+  document.getElementById("eneo-muhtasari").innerHTML = `
+    <div class="kipimo"><div class="lebo">Mapato</div><div class="thamani mapato">${fomatiFedha(data.mapato)}</div></div>
+    <div class="kipimo"><div class="lebo">Matumizi</div><div class="thamani matumizi">${fomatiFedha(data.matumizi)}</div></div>
+    <div class="kipimo"><div class="lebo">Salio</div><div class="thamani salio">${fomatiFedha(data.salio)}</div></div>
+  `;
+}
+
+async function pakiaMiamala() {
+  const res = await fetch(`/miamala?kipindi=${kipindiKilichochaguliwa}`);
+  const miamala = await res.json();
+  const mwili = document.getElementById("mwili-jedwali");
+  const ujumbeTupu = document.getElementById("ujumbe-tupu");
+
+  mwili.innerHTML = "";
+  if (miamala.length === 0) {
+    ujumbeTupu.style.display = "block";
+    return;
+  }
+  ujumbeTupu.style.display = "none";
+
+  for (const m of miamala) {
+    const safu = document.createElement("tr");
+    safu.innerHTML = `
+      <td>${fomatiTarehe(m.tarehe)}</td>
+      <td><span class="aina-lebo ${m.aina}">${m.aina}</span></td>
+      <td>${m.maelezo || "-"}</td>
+      <td>${fomatiFedha(m.kiasi)}</td>
+      <td><button class="futa-kitufe" onclick="futaMuamala(${m.id})">Futa</button></td>
+    `;
+    mwili.appendChild(safu);
+  }
+}
+
+async function futaMuamala(id) {
+  await fetch(`/miamala/${id}`, { method: "DELETE" });
+  await upashaUpya();
+}
+
+async function upashaUpya() {
+  await pakiaMuhtasari();
+  await pakiaMiamala();
+}
+
+document.getElementById("fomu-muamala").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const aina = document.getElementById("aina").value;
+  const kiasi = parseFloat(document.getElementById("kiasi").value);
+  const maelezo = document.getElementById("maelezo").value;
+
+  await fetch("/miamala", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ aina, kiasi, maelezo }),
+  });
+
+  document.getElementById("fomu-muamala").reset();
+  await upashaUpya();
+});
+
+document.querySelectorAll(".vitufe-kipindi button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".vitufe-kipindi button").forEach((b) => b.classList.remove("hai"));
+    btn.classList.add("hai");
+    kipindiKilichochaguliwa = btn.dataset.kipindi;
+    upashaUpya();
+  });
+});
+
+upashaUpya();
+</script>
+</body>
+</html>
