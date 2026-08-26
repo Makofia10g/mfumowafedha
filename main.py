@@ -1,20 +1,23 @@
 """
-Mfumo wa Mapato na Matumizi
-----------------------------
-Programu hii inakusaidia kufuatilia fedha zako - mapato (pesa inayoingia)
-na matumizi (pesa inayotoka) - kwa siku, wiki, na mwezi.
+Mfumo wa Mapato na Matumizi (Toleo la PostgreSQL)
+--------------------------------------------------
+Toleo hili linatumia PostgreSQL (hifadhidata ya kudumu) badala ya SQLite,
+ili data isipotee programu ikianzishwa upya kwenye Render.
 
-Jinsi ya kuendesha:
-    pip install fastapi uvicorn
+Jinsi ya kuendesha kwa ndani (local):
+    pip install -r requirements.txt
+    (Weka DATABASE_URL kwenye mazingira yako - angalia README.md)
     uvicorn main:app --reload
 
-Kisha fungua kivinjari: http://127.0.0.1:8000
+Kwenye Render, DATABASE_URL tayari imewekwa kama Environment Variable.
 """
 
-import sqlite3
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import psycopg2
+import psycopg2.extras
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,25 +28,29 @@ from pydantic import BaseModel
 # ---------------------------------------------------------------------------
 
 BASE_DIR = Path(__file__).parent
-DATABASE_PATH = BASE_DIR / "fedha.db"
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 app = FastAPI(title="Mfumo wa Mapato na Matumizi")
 
 
 def pata_muunganisho():
-    """Inarudisha muunganisho mpya na hifadhidata (database)."""
-    muunganisho = sqlite3.connect(DATABASE_PATH)
-    muunganisho.row_factory = sqlite3.Row
-    return muunganisho
+    """Inarudisha muunganisho mpya na hifadhidata ya PostgreSQL."""
+    if not DATABASE_URL:
+        raise RuntimeError(
+            "DATABASE_URL haijawekwa. Weka kwenye Environment Variables (Render) "
+            "au kwenye mazingira yako ya ndani."
+        )
+    return psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
 
 
 def anzisha_hifadhidata():
     """Inatengeneza jedwali la 'miamala' kama halipo."""
     muunganisho = pata_muunganisho()
-    muunganisho.execute(
+    cursor = muunganisho.cursor()
+    cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS miamala (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             aina TEXT NOT NULL CHECK(aina IN ('mapato', 'matumizi')),
             kiasi REAL NOT NULL,
             maelezo TEXT,
@@ -52,10 +59,13 @@ def anzisha_hifadhidata():
         """
     )
     muunganisho.commit()
+    cursor.close()
     muunganisho.close()
 
 
-anzisha_hifadhidata()
+@app.on_event("startup")
+def wakati_wa_kuanza():
+    anzisha_hifadhidata()
 
 
 # ---------------------------------------------------------------------------
@@ -87,12 +97,14 @@ def ongeza_muamala(muamala: MuamalaMpya):
 
     tarehe_ya_sasa = datetime.now().isoformat(timespec="seconds")
     muunganisho = pata_muunganisho()
-    cursor = muunganisho.execute(
-        "INSERT INTO miamala (aina, kiasi, maelezo, tarehe) VALUES (?, ?, ?, ?)",
+    cursor = muunganisho.cursor()
+    cursor.execute(
+        "INSERT INTO miamala (aina, kiasi, maelezo, tarehe) VALUES (%s, %s, %s, %s) RETURNING id",
         (muamala.aina, muamala.kiasi, muamala.maelezo, tarehe_ya_sasa),
     )
+    muamala_id = cursor.fetchone()["id"]
     muunganisho.commit()
-    muamala_id = cursor.lastrowid
+    cursor.close()
     muunganisho.close()
 
     return Muamala(id=muamala_id, tarehe=tarehe_ya_sasa, **muamala.dict())
@@ -104,18 +116,19 @@ def orodha_ya_miamala(kipindi: str = "yote"):
     Orodhesha miamala. `kipindi` inaweza kuwa: 'leo', 'wiki', 'mwezi', au 'yote'.
     """
     muunganisho = pata_muunganisho()
+    cursor = muunganisho.cursor()
     tarehe_ya_mwanzo = _tarehe_ya_mwanzo_kwa_kipindi(kipindi)
 
     if tarehe_ya_mwanzo:
-        safu = muunganisho.execute(
-            "SELECT * FROM miamala WHERE tarehe >= ? ORDER BY tarehe DESC",
+        cursor.execute(
+            "SELECT * FROM miamala WHERE tarehe >= %s ORDER BY tarehe DESC",
             (tarehe_ya_mwanzo.isoformat(timespec="seconds"),),
-        ).fetchall()
+        )
     else:
-        safu = muunganisho.execute(
-            "SELECT * FROM miamala ORDER BY tarehe DESC"
-        ).fetchall()
+        cursor.execute("SELECT * FROM miamala ORDER BY tarehe DESC")
 
+    safu = cursor.fetchall()
+    cursor.close()
     muunganisho.close()
     return [dict(row) for row in safu]
 
@@ -124,11 +137,14 @@ def orodha_ya_miamala(kipindi: str = "yote"):
 def futa_muamala(muamala_id: int):
     """Futa muamala mmoja kwa kutumia id yake."""
     muunganisho = pata_muunganisho()
-    matokeo = muunganisho.execute("DELETE FROM miamala WHERE id = ?", (muamala_id,))
+    cursor = muunganisho.cursor()
+    cursor.execute("DELETE FROM miamala WHERE id = %s", (muamala_id,))
+    idadi_iliyofutwa = cursor.rowcount
     muunganisho.commit()
+    cursor.close()
     muunganisho.close()
 
-    if matokeo.rowcount == 0:
+    if idadi_iliyofutwa == 0:
         raise HTTPException(status_code=404, detail="Muamala haujapatikana")
     return {"ujumbe": "Muamala umefutwa"}
 
@@ -140,21 +156,24 @@ def muhtasari(kipindi: str = "leo"):
     `kipindi`: 'leo', 'wiki', 'mwezi', au 'yote'.
     """
     muunganisho = pata_muunganisho()
+    cursor = muunganisho.cursor()
     tarehe_ya_mwanzo = _tarehe_ya_mwanzo_kwa_kipindi(kipindi)
 
     hoja_msingi = "SELECT aina, SUM(kiasi) as jumla FROM miamala"
     vigezo = ()
     if tarehe_ya_mwanzo:
-        hoja_msingi += " WHERE tarehe >= ?"
+        hoja_msingi += " WHERE tarehe >= %s"
         vigezo = (tarehe_ya_mwanzo.isoformat(timespec="seconds"),)
     hoja_msingi += " GROUP BY aina"
 
-    safu = muunganisho.execute(hoja_msingi, vigezo).fetchall()
+    cursor.execute(hoja_msingi, vigezo)
+    safu = cursor.fetchall()
+    cursor.close()
     muunganisho.close()
 
     matokeo = {"mapato": 0.0, "matumizi": 0.0}
     for row in safu:
-        matokeo[row["aina"]] = row["jumla"]
+        matokeo[row["aina"]] = float(row["jumla"])
 
     matokeo["salio"] = matokeo["mapato"] - matokeo["matumizi"]
     matokeo["kipindi"] = kipindi
