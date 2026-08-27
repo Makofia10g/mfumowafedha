@@ -21,19 +21,10 @@
     padding: 24px;
     color: #1a1a1a;
   }
-  .kifuko {
-    max-width: 780px;
-    margin: 0 auto;
-  }
-  h1 {
-    font-size: 1.5rem;
-    margin-bottom: 4px;
-  }
-  .maelezo-juu {
-    color: #666;
-    margin-bottom: 24px;
-    font-size: 0.9rem;
-  }
+  .kifuko { max-width: 780px; margin: 0 auto; }
+  .kifuko-dogo { max-width: 380px; margin: 60px auto; }
+  h1 { font-size: 1.5rem; margin-bottom: 4px; }
+  .maelezo-juu { color: #666; margin-bottom: 24px; font-size: 0.9rem; }
   .kadi {
     background: var(--kadi);
     border: 1px solid var(--mpaka);
@@ -41,6 +32,64 @@
     padding: 18px;
     margin-bottom: 20px;
   }
+
+  /* --- Sehemu ya Login/Usajili --- */
+  .kichwa-auth { text-align: center; margin-bottom: 20px; }
+  .kichwa-auth h1 { margin-bottom: 4px; }
+  .fomu-auth { display: flex; flex-direction: column; gap: 12px; }
+  .fomu-auth label { font-size: 0.8rem; color: #666; margin-bottom: 2px; display: block; }
+  .fomu-auth input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--mpaka);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  .fomu-auth button {
+    padding: 11px;
+    background: var(--kijani);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .badili-hali {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: #666;
+  }
+  .badili-hali a { color: var(--bluu); cursor: pointer; text-decoration: underline; }
+  .ujumbe-hitilafu {
+    background: #fbe9e7;
+    color: var(--nyekundu);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    display: none;
+  }
+
+  /* --- Sehemu ya juu ya dashibodi (mtumiaji + logout) --- */
+  .juu-dashibodi {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .jina-mtumiaji { font-size: 0.9rem; color: #444; }
+  .kitufe-toka {
+    background: none;
+    border: 1px solid var(--mpaka);
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
   .muhtasari-safu {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -70,13 +119,9 @@
     cursor: pointer;
     font-size: 0.85rem;
   }
-  .vitufe-kipindi button.hai {
-    background: var(--bluu);
-    color: white;
-    border-color: var(--bluu);
-  }
+  .vitufe-kipindi button.hai { background: var(--bluu); color: white; border-color: var(--bluu); }
 
-  form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+  form.fomu-muamala { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
   .sehemu { display: flex; flex-direction: column; gap: 4px; }
   .sehemu label { font-size: 0.75rem; color: #666; }
   .sehemu select, .sehemu input {
@@ -95,38 +140,76 @@
     cursor: pointer;
     font-size: 0.9rem;
   }
-  button.tuma:hover { opacity: 0.9; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-  th, td {
-    text-align: left;
-    padding: 8px 6px;
-    border-bottom: 1px solid var(--mpaka);
-    font-size: 0.85rem;
-  }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--mpaka); font-size: 0.85rem; }
   th { color: #777; font-weight: 500; }
-  .aina-lebo {
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-  }
+  .aina-lebo { padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
   .aina-lebo.mapato { background: #e6f6ec; color: var(--kijani); }
   .aina-lebo.matumizi { background: #fbe9e7; color: var(--nyekundu); }
-  .futa-kitufe {
-    background: none;
-    border: none;
-    color: #999;
-    cursor: pointer;
-    font-size: 0.85rem;
-  }
+  .futa-kitufe { background: none; border: none; color: #999; cursor: pointer; font-size: 0.85rem; }
   .futa-kitufe:hover { color: var(--nyekundu); }
   .tupu { text-align: center; color: #999; padding: 20px; font-size: 0.85rem; }
+  .fiche { display: none !important; }
 </style>
 </head>
 <body>
-<div class="kifuko">
-  <h1>💰 Mfumo wa Mapato na Matumizi</h1>
-  <p class="maelezo-juu">Fuatilia fedha zako kwa siku, wiki, na mwezi.</p>
+
+<!-- ========== UKURASA WA LOGIN / USAJILI ========== -->
+<div id="ukurasa-auth" class="kifuko-dogo">
+  <div class="kichwa-auth">
+    <h1>💰 Mfumo wa Fedha</h1>
+    <p class="maelezo-juu">Ingia au jisajili kuendelea</p>
+  </div>
+  <div class="kadi">
+    <div id="ujumbe-hitilafu" class="ujumbe-hitilafu"></div>
+
+    <!-- Fomu ya kuingia (login) -->
+    <form id="fomu-login" class="fomu-auth">
+      <div>
+        <label>Barua pepe</label>
+        <input type="email" id="login-barua-pepe" required>
+      </div>
+      <div>
+        <label>Password</label>
+        <input type="password" id="login-password" required>
+      </div>
+      <button type="submit">Ingia</button>
+    </form>
+
+    <!-- Fomu ya usajili (signup) - imefichwa mwanzoni -->
+    <form id="fomu-usajili" class="fomu-auth fiche">
+      <div>
+        <label>Jina lako</label>
+        <input type="text" id="usajili-jina" required>
+      </div>
+      <div>
+        <label>Barua pepe</label>
+        <input type="email" id="usajili-barua-pepe" required>
+      </div>
+      <div>
+        <label>Password (herufi/namba 6+)</label>
+        <input type="password" id="usajili-password" required minlength="6">
+      </div>
+      <button type="submit">Jisajili</button>
+    </form>
+
+    <div class="badili-hali">
+      <span id="badili-kwenda-usajili">Huna akaunti? <a onclick="badilishaHali('usajili')">Jisajili</a></span>
+      <span id="badili-kwenda-login" class="fiche">Una akaunti tayari? <a onclick="badilishaHali('login')">Ingia</a></span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== DASHIBODI (baada ya kuingia) ========== -->
+<div id="dashibodi" class="kifuko fiche">
+  <div class="juu-dashibodi">
+    <div>
+      <h1>💰 Mfumo wa Mapato na Matumizi</h1>
+      <span class="jina-mtumiaji">Karibu, <strong id="jina-mtumiaji-eneo"></strong></span>
+    </div>
+    <button class="kitufe-toka" onclick="toka()">Toka</button>
+  </div>
 
   <div class="muhtasari-safu" id="eneo-muhtasari"></div>
 
@@ -138,7 +221,7 @@
   </div>
 
   <div class="kadi">
-    <form id="fomu-muamala">
+    <form id="fomu-muamala" class="fomu-muamala">
       <div class="sehemu">
         <label>Aina</label>
         <select id="aina" required>
@@ -160,9 +243,7 @@
 
   <div class="kadi">
     <table>
-      <thead>
-        <tr><th>Tarehe</th><th>Aina</th><th>Maelezo</th><th>Kiasi</th><th></th></tr>
-      </thead>
+      <thead><tr><th>Tarehe</th><th>Aina</th><th>Maelezo</th><th>Kiasi</th><th></th></tr></thead>
       <tbody id="mwili-jedwali"></tbody>
     </table>
     <div id="ujumbe-tupu" class="tupu" style="display:none;">Hakuna miamala bado. Ongeza wa kwanza hapo juu.</div>
@@ -175,15 +256,91 @@ let kipindiKilichochaguliwa = "leo";
 function fomatiFedha(namba) {
   return "TSh " + Number(namba).toLocaleString("en-US", { maximumFractionDigits: 0 });
 }
-
 function fomatiTarehe(isoTarehe) {
   const d = new Date(isoTarehe);
   return d.toLocaleDateString("sw-TZ", { day: "2-digit", month: "short" }) + " " +
          d.toLocaleTimeString("sw-TZ", { hour: "2-digit", minute: "2-digit" });
 }
 
+function badilishaHali(hali) {
+  document.getElementById("ujumbe-hitilafu").style.display = "none";
+  if (hali === "usajili") {
+    document.getElementById("fomu-login").classList.add("fiche");
+    document.getElementById("fomu-usajili").classList.remove("fiche");
+    document.getElementById("badili-kwenda-usajili").classList.add("fiche");
+    document.getElementById("badili-kwenda-login").classList.remove("fiche");
+  } else {
+    document.getElementById("fomu-usajili").classList.add("fiche");
+    document.getElementById("fomu-login").classList.remove("fiche");
+    document.getElementById("badili-kwenda-login").classList.add("fiche");
+    document.getElementById("badili-kwenda-usajili").classList.remove("fiche");
+  }
+}
+
+function onyeshaHitilafu(ujumbe) {
+  const eneo = document.getElementById("ujumbe-hitilafu");
+  eneo.textContent = ujumbe;
+  eneo.style.display = "block";
+}
+
+async function angaliaKamaAmelogin() {
+  const res = await fetch("/mtumiaji/sasa", { credentials: "include" });
+  const data = await res.json();
+  if (data.amelogin) {
+    onyeshaDashibodi(data.jina);
+  } else {
+    document.getElementById("ukurasa-auth").classList.remove("fiche");
+    document.getElementById("dashibodi").classList.add("fiche");
+  }
+}
+
+function onyeshaDashibodi(jina) {
+  document.getElementById("ukurasa-auth").classList.add("fiche");
+  document.getElementById("dashibodi").classList.remove("fiche");
+  document.getElementById("jina-mtumiaji-eneo").textContent = jina;
+  upashaUpya();
+}
+
+document.getElementById("fomu-login").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const barua_pepe = document.getElementById("login-barua-pepe").value;
+  const password = document.getElementById("login-password").value;
+
+  const res = await fetch("/ingia", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ barua_pepe, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) { onyeshaHitilafu(data.detail || "Imeshindikana kuingia"); return; }
+  onyeshaDashibodi(data.jina);
+});
+
+document.getElementById("fomu-usajili").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const jina = document.getElementById("usajili-jina").value;
+  const barua_pepe = document.getElementById("usajili-barua-pepe").value;
+  const password = document.getElementById("usajili-password").value;
+
+  const res = await fetch("/usajili", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ jina, barua_pepe, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) { onyeshaHitilafu(data.detail || "Imeshindikana kujisajili"); return; }
+  onyeshaDashibodi(data.jina);
+});
+
+async function toka() {
+  await fetch("/toka", { method: "POST", credentials: "include" });
+  location.reload();
+}
+
 async function pakiaMuhtasari() {
-  const res = await fetch(`/muhtasari?kipindi=${kipindiKilichochaguliwa}`);
+  const res = await fetch(`/muhtasari?kipindi=${kipindiKilichochaguliwa}`, { credentials: "include" });
   const data = await res.json();
   document.getElementById("eneo-muhtasari").innerHTML = `
     <div class="kipimo"><div class="lebo">Mapato</div><div class="thamani mapato">${fomatiFedha(data.mapato)}</div></div>
@@ -193,18 +350,13 @@ async function pakiaMuhtasari() {
 }
 
 async function pakiaMiamala() {
-  const res = await fetch(`/miamala?kipindi=${kipindiKilichochaguliwa}`);
+  const res = await fetch(`/miamala?kipindi=${kipindiKilichochaguliwa}`, { credentials: "include" });
   const miamala = await res.json();
   const mwili = document.getElementById("mwili-jedwali");
   const ujumbeTupu = document.getElementById("ujumbe-tupu");
-
   mwili.innerHTML = "";
-  if (miamala.length === 0) {
-    ujumbeTupu.style.display = "block";
-    return;
-  }
+  if (miamala.length === 0) { ujumbeTupu.style.display = "block"; return; }
   ujumbeTupu.style.display = "none";
-
   for (const m of miamala) {
     const safu = document.createElement("tr");
     safu.innerHTML = `
@@ -219,7 +371,7 @@ async function pakiaMiamala() {
 }
 
 async function futaMuamala(id) {
-  await fetch(`/miamala/${id}`, { method: "DELETE" });
+  await fetch(`/miamala/${id}`, { method: "DELETE", credentials: "include" });
   await upashaUpya();
 }
 
@@ -233,13 +385,12 @@ document.getElementById("fomu-muamala").addEventListener("submit", async (e) => 
   const aina = document.getElementById("aina").value;
   const kiasi = parseFloat(document.getElementById("kiasi").value);
   const maelezo = document.getElementById("maelezo").value;
-
   await fetch("/miamala", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ aina, kiasi, maelezo }),
   });
-
   document.getElementById("fomu-muamala").reset();
   await upashaUpya();
 });
@@ -253,7 +404,7 @@ document.querySelectorAll(".vitufe-kipindi button").forEach((btn) => {
   });
 });
 
-upashaUpya();
+angaliaKamaAmelogin();
 </script>
 </body>
 </html>
